@@ -68,7 +68,7 @@
     <section id="face-scan" class="page pt-12">
         <div class="max-w-4xl mx-auto px-6">
             <h2 class="text-5xl font-semibold logo-font tracking-tighter">Live Face Emotion AI</h2>
-            <p class="text-slate-400">Real-time detection • Whole numbers only</p>
+            <p class="text-slate-400">Real-time detection with emojis</p>
 
             <div class="video-container mt-8 bg-slate-900 p-3">
                 <video id="webcam" class="w-full rounded-2xl" autoplay playsinline muted></video>
@@ -96,7 +96,7 @@
         </div>
     </section>
 
-    <!-- RESULTS PAGE (Matches your screenshot style) -->
+    <!-- RESULTS PAGE -->
     <section id="results" class="page pt-12">
         <div class="max-w-7xl mx-auto px-6">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -157,6 +157,15 @@
         let isScanning = false;
         let finalResults = null;
 
+        const emotionEmojis = {
+            happy: "😊",
+            calm: "😌",
+            stressed: "😟",
+            sad: "😢",
+            angry: "😠",
+            neutral: "😐"
+        };
+
         const questions = [
             {id:"sleep", text:"How well do you sleep at night?", labels:["Very Poor","Poor","Average","Good","Excellent"]},
             {id:"stress", text:"How often do you feel stressed?", labels:["Never","Rarely","Sometimes","Often","Always"]},
@@ -176,10 +185,11 @@
             
             Object.entries(emotions).forEach(([key, val]) => {
                 const percent = roundPercent(val);
+                const emoji = emotionEmojis[key] || "😶";
                 const div = document.createElement('div');
                 div.className = "flex items-center gap-4";
                 div.innerHTML = `
-                    <span class="w-28 capitalize font-medium">${key}</span>
+                    <span class="w-28 flex items-center gap-2 capitalize font-medium">${emoji} ${key}</span>
                     <div class="flex-1 emotion-bar">
                         <div class="h-full bg-gradient-to-r from-cyan-400 to-violet-500" style="width: ${percent}%"></div>
                     </div>
@@ -280,16 +290,17 @@
                 msg.textContent = "You're experiencing some challenges. Consider professional support.";
             }
 
-            // Face Summary
-            let faceHTML = `<p class="text-emerald-400 font-medium">Your face showed mostly <strong>HAPPY</strong></p>`;
+            // Face Summary with Emojis
+            let faceHTML = `<p class="text-emerald-400 font-medium">Your face showed mostly <strong>HAPPY ${emotionEmojis.happy}</strong></p>`;
             Object.entries(finalResults.emotions).forEach(([k,v]) => {
+                const percent = roundPercent(v);
                 faceHTML += `
                     <div class="flex items-center justify-between">
-                        <span class="capitalize">${k}</span>
+                        <span class="capitalize flex items-center gap-2">${emotionEmojis[k]} ${k}</span>
                         <div class="flex-1 mx-4 h-2 bg-slate-700 rounded-full overflow-hidden">
-                            <div class="h-full bg-cyan-400" style="width:${roundPercent(v)}%"></div>
+                            <div class="h-full bg-cyan-400" style="width:${percent}%"></div>
                         </div>
-                        <span>${roundPercent(v)}%</span>
+                        <span>${percent}%</span>
                     </div>`;
             });
             document.getElementById('face-summary').innerHTML = faceHTML;
@@ -313,24 +324,24 @@
                 <div class="bg-slate-800 p-5 rounded-2xl">🏃 Take short evening walks</div>
             `;
 
-            // Charts
             renderCharts();
         }
 
         function renderCharts() {
-            // Pie Chart
             const pieCtx = document.getElementById('pie-chart').getContext('2d');
             if (window.pieChart) window.pieChart.destroy();
             window.pieChart = new Chart(pieCtx, {
                 type: 'pie',
                 data: {
-                    labels: Object.keys(finalResults.emotions),
-                    datasets: [{ data: Object.values(finalResults.emotions).map(v => roundPercent(v)), backgroundColor: ['#22d3ee','#67e8f9','#f87171','#fb923c','#a5b4fc','#64748b'] }]
+                    labels: Object.keys(finalResults.emotions).map(k => emotionEmojis[k] + " " + k),
+                    datasets: [{ 
+                        data: Object.values(finalResults.emotions).map(v => roundPercent(v)), 
+                        backgroundColor: ['#22d3ee','#67e8f9','#f87171','#fb923c','#a5b4fc','#64748b'] 
+                    }]
                 },
                 options: { plugins: { legend: { position: 'bottom' } } }
             });
 
-            // Radar
             const radarCtx = document.getElementById('radar-chart').getContext('2d');
             if (window.radarChart) window.radarChart.destroy();
             window.radarChart = new Chart(radarCtx, {
