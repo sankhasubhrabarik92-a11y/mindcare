@@ -96,48 +96,36 @@
         </div>
     </section>
 
-    <!-- RESULTS PAGE -->
+    <!-- RESULTS -->
     <section id="results" class="page pt-12">
         <div class="max-w-7xl mx-auto px-6">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                
-                <!-- Overall Score -->
                 <div class="lg:col-span-5 bg-gradient-to-br from-slate-900 to-indigo-950 rounded-3xl p-10 text-center border border-cyan-400/20">
                     <div id="overall-score" class="text-8xl font-bold text-cyan-400">82</div>
                     <p class="text-cyan-300 uppercase tracking-widest text-sm mt-1">Overall Mental Wellness</p>
-                    
                     <div class="relative w-64 h-64 mx-auto mt-8">
                         <canvas id="progress-circle"></canvas>
                     </div>
-                    
-                    <p id="status-text" class="mt-6 text-3xl font-semibold text-emerald-400">GOOD</p>
+                    <p id="status-text" class="mt-6 text-3xl font-semibold"></p>
                     <p id="status-message" class="text-slate-400 mt-3 max-w-xs mx-auto"></p>
                 </div>
 
-                <!-- Face Scan Summary -->
                 <div class="lg:col-span-7 bg-slate-900 rounded-3xl p-8">
-                    <h3 class="flex items-center gap-2 text-emerald-400 font-semibold mb-6">
-                        📸 FROM FACE SCAN
-                    </h3>
+                    <h3 class="flex items-center gap-2 text-emerald-400 font-semibold mb-6">📸 FROM FACE SCAN</h3>
                     <div id="face-summary" class="space-y-5"></div>
                 </div>
 
-                <!-- Assessment Summary -->
                 <div class="lg:col-span-7 bg-slate-900 rounded-3xl p-8 mt-6 lg:mt-0">
-                    <h3 class="flex items-center gap-2 text-violet-400 font-semibold mb-6">
-                        📋 FROM ASSESSMENT
-                    </h3>
+                    <h3 class="flex items-center gap-2 text-violet-400 font-semibold mb-6">📋 FROM ASSESSMENT</h3>
                     <div id="assessment-summary" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </div>
 
-                <!-- Advice -->
                 <div class="lg:col-span-12 bg-slate-900 rounded-3xl p-8 mt-6">
                     <h3 class="text-xl font-semibold text-emerald-400 mb-6">💡 Personalized Recommendations</h3>
                     <div id="advice-list" class="grid md:grid-cols-3 gap-6"></div>
                 </div>
             </div>
 
-            <!-- Charts -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
                 <div class="bg-slate-900 rounded-3xl p-8">
                     <h4 class="font-semibold mb-6">Emotion Distribution (Face AI)</h4>
@@ -157,32 +145,22 @@
         let isScanning = false;
         let finalResults = null;
 
-        const emotionEmojis = {
-            happy: "😊",
-            calm: "😌",
-            stressed: "😟",
-            sad: "😢",
-            angry: "😠",
-            neutral: "😐"
-        };
+        const emotionEmojis = { happy: "😊", calm: "😌", stressed: "😟", sad: "😢", angry: "😠", neutral: "😐" };
 
         const questions = [
-            {id:"sleep", text:"How well do you sleep at night?", labels:["Very Poor","Poor","Average","Good","Excellent"]},
-            {id:"stress", text:"How often do you feel stressed?", labels:["Never","Rarely","Sometimes","Often","Always"]},
-            {id:"anxiety", text:"How often do you feel anxious?", labels:["Never","Rarely","Sometimes","Often","Always"]},
-            {id:"energy", text:"Your energy levels throughout the day?", labels:["Very Low","Low","Average","High","Very High"]},
-            {id:"mood", text:"Overall, how would you rate your mood today?", labels:["Very Low","Low","Neutral","Good","Very Good"]},
-            {id:"focus", text:"How is your ability to focus?", labels:["Very Poor","Poor","Average","Good","Excellent"]}
+            {id:"sleep", text:"How well do you sleep at night?", labels:["Very Poor","Poor","Average","Good","Excellent"], invert: false},
+            {id:"stress", text:"How often do you feel stressed?", labels:["Never","Rarely","Sometimes","Often","Always"], invert: true},
+            {id:"anxiety", text:"How often do you feel anxious?", labels:["Never","Rarely","Sometimes","Often","Always"], invert: true},
+            {id:"energy", text:"Your energy levels throughout the day?", labels:["Very Low","Low","Average","High","Very High"], invert: false},
+            {id:"mood", text:"Overall, how would you rate your mood today?", labels:["Very Low","Low","Neutral","Good","Very Good"], invert: false},
+            {id:"focus", text:"How is your ability to focus?", labels:["Very Poor","Poor","Average","Good","Excellent"], invert: false}
         ];
 
-        function roundPercent(val) {
-            return Math.round(val);
-        }
+        function roundPercent(val) { return Math.round(val); }
 
         function renderEmotionBars() {
             const container = document.getElementById('emotion-bars');
             container.innerHTML = '';
-            
             Object.entries(emotions).forEach(([key, val]) => {
                 const percent = roundPercent(val);
                 const emoji = emotionEmojis[key] || "😶";
@@ -203,12 +181,10 @@
             const video = document.getElementById('webcam');
             document.getElementById('start-btn').classList.add('hidden');
             document.getElementById('stop-btn').classList.remove('hidden');
-
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 video.srcObject = stream;
             } catch(e) {}
-
             isScanning = true;
             liveSimulation();
         }
@@ -222,11 +198,9 @@
 
         function liveSimulation() {
             if (!isScanning) return;
-            
             emotions.happy = Math.max(70, Math.min(95, emotions.happy + (Math.random()*8 - 4)));
             emotions.calm = Math.max(65, Math.min(90, emotions.calm + (Math.random()*7 - 3.5)));
             emotions.stressed = Math.max(5, Math.min(30, emotions.stressed + (Math.random()*6 - 3)));
-            
             renderEmotionBars();
             setTimeout(liveSimulation, 1400);
         }
@@ -247,13 +221,20 @@
         }
 
         function calculateScore() {
-            let face = (emotions.happy * 0.45) + (emotions.calm * 0.35) + (100 - emotions.stressed) * 0.2;
-            let ass = 0;
+            // Face Score (Positive)
+            let faceScore = (emotions.happy * 0.45) + (emotions.calm * 0.35) + (100 - emotions.stressed) * 0.2;
+
+            // Assessment Score with inversion for negative questions
+            let assTotal = 0;
             questions.forEach(q => {
-                const v = parseInt(document.getElementById(q.id).value) || 3;
-                ass += v * 20;
+                let val = parseInt(document.getElementById(q.id).value) || 3;
+                if (q.invert) val = 6 - val; // Invert stress & anxiety
+                assTotal += val * 20;
             });
-            return Math.round((face * 0.55) + (ass / questions.length * 0.45));
+            const assScore = assTotal / questions.length;
+
+            // Final weighted score
+            return Math.round((faceScore * 0.5) + (assScore * 0.5));
         }
 
         function submitAssessment(e) {
@@ -276,21 +257,24 @@
         function renderResults() {
             document.getElementById('overall-score').textContent = finalResults.score;
 
-            const status = document.getElementById('status-text');
-            const msg = document.getElementById('status-message');
-            
+            const statusEl = document.getElementById('status-text');
+            const msgEl = document.getElementById('status-message');
+
             if (finalResults.score >= 80) {
-                status.textContent = "EXCELLENT"; status.className = "mt-6 text-3xl font-semibold text-emerald-400";
-                msg.textContent = "You're in a great mental state. Keep maintaining these habits.";
+                statusEl.textContent = "EXCELLENT";
+                statusEl.className = "mt-6 text-3xl font-semibold text-emerald-400";
+                msgEl.textContent = "You're in a great mental state. Keep maintaining these habits.";
             } else if (finalResults.score >= 65) {
-                status.textContent = "GOOD"; status.className = "mt-6 text-3xl font-semibold text-amber-400";
-                msg.textContent = "Solid foundation. Small improvements can take you higher.";
+                statusEl.textContent = "GOOD";
+                statusEl.className = "mt-6 text-3xl font-semibold text-amber-400";
+                msgEl.textContent = "Solid foundation. Small improvements can take you higher.";
             } else {
-                status.textContent = "NEEDS ATTENTION"; status.className = "mt-6 text-3xl font-semibold text-orange-400";
-                msg.textContent = "You're experiencing some challenges. Consider professional support.";
+                statusEl.textContent = "NEEDS ATTENTION";
+                statusEl.className = "mt-6 text-3xl font-semibold text-orange-400";
+                msgEl.textContent = "You're experiencing challenges. Consider reaching out to a professional.";
             }
 
-            // Face Summary with Emojis
+            // Face Summary
             let faceHTML = `<p class="text-emerald-400 font-medium">Your face showed mostly <strong>HAPPY ${emotionEmojis.happy}</strong></p>`;
             Object.entries(finalResults.emotions).forEach(([k,v]) => {
                 const percent = roundPercent(v);
@@ -317,11 +301,11 @@
             });
             document.getElementById('assessment-summary').innerHTML = assHTML;
 
-            // Advice
+            // Dynamic Advice
             document.getElementById('advice-list').innerHTML = `
-                <div class="bg-slate-800 p-5 rounded-2xl">🌿 Practice 10 min daily mindfulness</div>
-                <div class="bg-slate-800 p-5 rounded-2xl">💤 Maintain consistent sleep schedule</div>
-                <div class="bg-slate-800 p-5 rounded-2xl">🏃 Take short evening walks</div>
+                <div class="bg-slate-800 p-5 rounded-2xl">🌿 Practice daily mindfulness breathing</div>
+                <div class="bg-slate-800 p-5 rounded-2xl">💤 Improve sleep routine</div>
+                <div class="bg-slate-800 p-5 rounded-2xl">🏃 Take regular short walks</div>
             `;
 
             renderCharts();
@@ -334,10 +318,7 @@
                 type: 'pie',
                 data: {
                     labels: Object.keys(finalResults.emotions).map(k => emotionEmojis[k] + " " + k),
-                    datasets: [{ 
-                        data: Object.values(finalResults.emotions).map(v => roundPercent(v)), 
-                        backgroundColor: ['#22d3ee','#67e8f9','#f87171','#fb923c','#a5b4fc','#64748b'] 
-                    }]
+                    datasets: [{ data: Object.values(finalResults.emotions).map(v => roundPercent(v)), backgroundColor: ['#22d3ee','#67e8f9','#f87171','#fb923c','#a5b4fc','#64748b'] }]
                 },
                 options: { plugins: { legend: { position: 'bottom' } } }
             });
@@ -347,7 +328,7 @@
             window.radarChart = new Chart(radarCtx, {
                 type: 'radar',
                 data: {
-                    labels: questions.map(q => q.text.substring(0,15)),
+                    labels: questions.map(q => q.text.substring(0,18)),
                     datasets: [{ label: 'Score', data: Object.values(finalResults.answers), borderColor: '#22d3ee', backgroundColor: 'rgba(34,211,238,0.2)' }]
                 },
                 options: { scales: { r: { min:1, max:5 } } }
